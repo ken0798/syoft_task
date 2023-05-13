@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import RootLayout from "../layout";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 
 const Header = styled.header`
   background-color: black;
@@ -19,6 +19,29 @@ const Header = styled.header`
     border: 1px solid azure;
     border-radius: 8px;
     color: azure;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    &::before {
+      content: "";
+      width: 100%;
+      height: 100%;
+      background-image: linear-gradient(to right, #6f57e9 99%, black 1%);
+      position: absolute;
+      z-index: -1;
+      transition: transform 1s ease-in-out;
+      transform: translateX(-100%);
+      left: 0;
+      top: 0;
+      bottom: 0;
+      border-radius: 8px;
+    }
+    &:hover {
+      border: none;
+      &::before {
+        transform: translateX(0%);
+      }
+    }
   }
 `;
 
@@ -60,10 +83,13 @@ const Card = styled.ul`
 `;
 
 export default function Home() {
-  const localData = localStorage.getItem("USER_DATA");
-  const nav = useNavigate();
-  const user = JSON.parse(localData)[0];
   const [ripple, setRipple] = useState(true);
+  const nav = useNavigate();
+  const localData = localStorage.getItem("USER_DATA");
+  if (!localData) {
+    return <Navigate to="/login" replace={true} />;
+  }
+  const user = JSON.parse(localData)[0];
   const handleLog = () => {
     localStorage.removeItem("USER_DATA");
     nav("/login");
