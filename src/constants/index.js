@@ -8,16 +8,11 @@ export function randomPickImage(id) {
   };
 }
 
-export function initialState(path) {
-  return path
-    ? { email: "", password: "", message: "", status: "" }
-    : {
-        firstName: "",
-        lastName: "",
-        email: "",
-        password: "",
-        mobile: "",
-        message: "",
-        status: "",
-      };
+export function handleTimers(cb, time) {
+  setTimeout(() => {
+    cb((pre) => ({
+      ...pre,
+      message: "",
+    }));
+  }, time);
 }

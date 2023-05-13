@@ -1,10 +1,9 @@
-import { randomPickImage, heroPics, initialState } from "../../constants";
+import { randomPickImage, heroPics } from "../../constants";
 import styled from "styled-components";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { loginUser, registerUser } from "../../services";
-import RootLayout from "../layout";
+import RootLayout from "../../modules/layout";
 
 const AuthContainer = styled.div`
   display: grid;
@@ -130,119 +129,15 @@ const Form = styled.form`
 
 const Message = styled.p`
   color: ${(props) => (props.status ? "green" : "red")};
+  &::after {
+    content: "${(props) => (props.status ? "" : "*")}";
+  }
 `;
 
-function App() {
-  const location = useLocation();
-  const authPath = location.pathname === "/login";
-  const [state, setState] = useState(initialState(authPath));
-  const nav = useNavigate();
+function Auth({ login, state, handleInput, handleSubmit }) {
   const [view, setView] = useState(false);
   const [policy, setPolicy] = useState(true);
 
-  function handleInput(e) {
-    setState((pre) => ({
-      ...pre,
-      [e.target.name]: e.target.value,
-    }));
-  }
-
-  async function handleLogin() {
-    const { email, password } = state;
-    if (!email || !password) {
-      setState((pre) => ({
-        ...pre,
-        message: "All fields are required*",
-      }));
-      setTimeout(() => {
-        setState((pre) => ({
-          ...pre,
-          message: "",
-        }));
-      }, 2000);
-      return;
-    }
-    const reqObj = {
-      user_email: email,
-      user_password: password,
-    };
-    try {
-      const res = await loginUser(reqObj);
-      const { status, msg, user_data: userInfo } = res;
-      setState((pre) => ({
-        ...pre,
-        message: msg,
-        status: status,
-      }));
-      if (status) {
-        localStorage.setItem("USER_DATA", JSON.stringify(userInfo));
-        nav("/");
-      }
-      setTimeout(() => {
-        setState((pre) => ({
-          ...pre,
-          message: "",
-        }));
-      }, 3000);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async function handleRegister() {
-    const { firstName, lastName, email, password, mobile } = state;
-    if (!firstName || !lastName || !email || !password || !mobile || !policy) {
-      setState((pre) => ({
-        ...pre,
-        message: "All fields are required*",
-      }));
-      setTimeout(() => {
-        setState((pre) => ({
-          ...pre,
-          message: "",
-        }));
-      }, 2000);
-      return;
-    }
-    const reqObj = {
-      user_firstname: firstName,
-      user_lastname: lastName,
-      user_email: email,
-      user_password: password,
-      user_phone: mobile,
-      user_city: "hyderabad",
-      user_zipcode: "523127",
-    };
-    try {
-      const res = await registerUser(reqObj);
-      const { status, msg } = res;
-      setState((pre) => ({
-        ...pre,
-        message: msg,
-        status: status,
-      }));
-      if (status) {
-        nav("/login");
-      }
-      setTimeout(() => {
-        setState((pre) => ({
-          ...pre,
-          message: "",
-        }));
-      }, 3000);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  const onSubmission = (e) => {
-    e.preventDefault();
-    if (authPath) {
-      handleLogin();
-    } else {
-      handleRegister();
-    }
-  };
   return (
     <RootLayout>
       <AuthContainer>
@@ -267,15 +162,15 @@ function App() {
           </div>
         </Welcome>
         <FormContainer>
-          <h1>{authPath ? "Log In" : "Sign Up"}</h1>
+          <h1>{login ? "Log In" : "Sign Up"}</h1>
           <p>
-            {authPath ? "Not a user?" : " Already have an account?"}{" "}
-            <Link to={authPath ? "/register" : "/login"}>{`Sign ${
-              authPath ? "up" : "in"
+            {login ? "Not a user?" : " Already have an account?"}{" "}
+            <Link to={login ? "/register" : "/login"}>{`Sign ${
+              login ? "up" : "in"
             } `}</Link>{" "}
           </p>
-          <Form onSubmit={onSubmission}>
-            {!authPath && (
+          <Form onSubmit={handleSubmit}>
+            {!login && (
               <>
                 <label htmlFor="first-name">First Name</label>
                 <input
@@ -313,7 +208,7 @@ function App() {
               onChange={handleInput}
               value={state.password}
             />
-            {!authPath && (
+            {!login && (
               <div>
                 <input
                   checked={policy}
@@ -328,14 +223,14 @@ function App() {
               </div>
             )}
             <button type="submit">
-              {authPath ? "Log into your account" : "Create your free account"}
+              {login ? "Log into your account" : "Create your free account"}
             </button>
             {state.password.length ? (
               view ? (
                 <AiOutlineEye
                   onClick={() => setView((pre) => !pre)}
                   style={{
-                    bottom: !authPath ? "140px" : "93px",
+                    bottom: !login ? "140px" : "93px",
                   }}
                   className="sym"
                 />
@@ -343,7 +238,7 @@ function App() {
                 <AiOutlineEyeInvisible
                   onClick={() => setView((pre) => !pre)}
                   style={{
-                    bottom: !authPath ? "140px" : "93px",
+                    bottom: !login ? "140px" : "93px",
                   }}
                   className="sym"
                 />
@@ -359,4 +254,4 @@ function App() {
   );
 }
 
-export default App;
+export default Auth;
